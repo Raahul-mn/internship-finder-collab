@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .if-container {
+    max-width: 920px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+  }
+  .if-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+  }
+  .if-card-header {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 1.25rem 1.75rem;
+  }
+  .if-card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .if-card-header p {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: #cbd5e1;
+  }
+  .if-card-body {
+    padding: 1.75rem;
+  }
+  .if-section {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .if-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 1rem;
+    padding-bottom: 0;
+  }
+  .if-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #2563eb;
+    margin: 0 0 1rem;
+  }
+  .if-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 1.25rem;
+  }
+  .if-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem 1.25rem;
+  }
+  .if-full {
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 768px) {
+    .if-grid-2, .if-grid-3 {
+      grid-template-columns: 1fr;
+    }
+  }
+  .if-field {
+    display: flex;
+    flex-direction: column;
+  }
+  .if-field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.35rem;
+  }
+  .if-hint {
+    font-size: 0.76rem;
+    color: #64748b;
+    margin-top: 0.3rem;
+  }
+  .if-field input,
+  .if-field select,
+  .if-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.925rem;
+    color: #0f172a;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .if-field input:focus,
+  .if-field select:focus,
+  .if-field textarea:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+  .if-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  .if-btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 0.65rem 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .if-btn-primary:hover {
+    background: #1d4ed8;
+  }
+  .if-btn-secondary {
+    background: #f1f5f9;
+    color: #334155;
+    text-decoration: none;
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .if-btn-secondary:hover {
+    background: #e2e8f0;
+  }
+</style>
+
+<div class="if-container">
+  <div class="if-card">
+    <div class="if-card-header">
+      <h3>Candidate Academic &amp; Technical Profile</h3>
+      <p>Follow the format examples shown in each box so the AI Matchmaker scores your branch, CGPA, and projects accurately.</p>
+    </div>
+
+    <div class="if-card-body">
+      <form method="POST" action="{{ url_for('student_profile') }}">
+        <!-- Section 1: Identity & Portfolio -->
+        <div class="if-section">
+          <div class="if-section-title">1. Personal &amp; Portfolio Links</div>
+          <div class="if-grid-2">
+            <div class="if-field">
+              <label>Full Name *</label>
+              <input type="text" name="name" required
+                     placeholder="Format: First Last — e.g., Raahul M N"
+                     value="{{ (profile['name'] or '') if profile else '' }}">
+            </div>
+            <div class="if-field">
+              <label>Email Address *</label>
+              <input type="email" name="email" required
+                     placeholder="Format: name@domain.com"
+                     value="{{ (profile['email'] or session.get('email', '')) if profile else session.get('email', '') }}">
+            </div>
+            <div class="if-field">
+              <label>GitHub Profile URL</label>
+              <input type="url" name="github_url"
+                     placeholder="Format: https://github.com/username"
+                     value="{{ (profile['github_url'] or '') if profile else '' }}">
+            </div>
+            <div class="if-field">
+              <label>LinkedIn Profile URL</label>
+              <input type="url" name="linkedin_url"
+                     placeholder="Format: https://linkedin.com/in/username"
+                     value="{{ (profile['linkedin_url'] or '') if profile else '' }}">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Academic & Semester Timeline -->
+        <div class="if-section">
+          <div class="if-section-title">2. Academic Standing &amp; Semester Window</div>
+          <div class="if-grid-3">
+            <div class="if-field" style="grid-column: span 2;">
+              <label>College / University Name</label>
+              <input type="text" name="college"
+                     placeholder="Format: Full Institution Name — e.g., SSN College of Engineering, Chennai"
+                     value="{{ (profile['college'] or '') if profile else '' }}">
+            </div>
+            <div class="if-field">
+              <label>Current CGPA / Percentage</label>
+              <input type="text" name="cgpa"
+                     placeholder="Format: X.XX or XX% — e.g., 8.45 or 82%"
+                     value="{{ (profile['cgpa'] or '') if profile else '' }}">
+            </div>
+
+            <div class="if-field" style="grid-column: span 2;">
+              <label>Degree &amp; Department / Branch</label>
+              <input type="text" name="degree_branch"
+                     placeholder="Format: Degree + Branch — e.g., B.Tech CSE, B.Tech ECE, B.Tech EEE, B.Tech IT"
+                     value="{{ (profile['degree_branch'] if (profile and 'degree_branch' in profile.keys() and profile['degree_branch']) else '') }}">
+            </div>
+            <div class="if-field">
+              <label>Course Duration</label>
+              {% set cd = (profile['course_duration'] or '') if profile else '' %}
+              <select name="course_duration">
+                <option value="4 Years (8 Semesters)" {% if cd == '4 Years (8 Semesters)' %}selected{% endif %}>4 Years (8 Semesters)</option>
+                <option value="3 Years (6 Semesters)" {% if cd == '3 Years (6 Semesters)' %}selected{% endif %}>3 Years (6 Semesters)</option>
+                <option value="2 Years (4 Semesters)" {% if cd == '2 Years (4 Semesters)' %}selected{% endif %}>2 Years (4 Semesters)</option>
+                <option value="5 Years (10 Semesters)" {% if cd == '5 Years (10 Semesters)' %}selected{% endif %}>5 Years (10 Semesters)</option>
+              </select>
+            </div>
+
+            <div class="if-field if-full">
+              <label>Completed Courses &amp; Certifications (One per line)</label>
+              <textarea name="courses" rows="4"
+                        placeholder="Format: Numbered list, one per line:&#10;1. Data Structures & Algorithms (College Core)&#10;2. Database Management Systems / DBMS (College Core)&#10;3. Operating Systems & Computer Networks&#10;4. Full-Stack Web Development with Python & Flask (NPTEL / Coursera)">{{ (profile['courses'] or '') if profile else '' }}</textarea>
+              <span class="if-hint">Enter each college subject or online certification (NPTEL, Coursera, Udemy) on a separate line.</span>
+            </div>
+
+            <div class="if-field">
+              <label>Current Semester</label>
+              <input type="text" name="current_semester"
+                     placeholder="Format: Semester X — e.g., Semester 5"
+                     value="{{ (profile['current_semester'] or '') if profile else '' }}">
+            </div>
+            <div class="if-field">
+              <label>Target Internship Semester</label>
+              <input type="text" name="target_semester"
+                     placeholder="Format: Semester X — e.g., Semester 6 (Summer)"
+                     value="{{ (profile['target_semester'] or '') if profile else '' }}">
+            </div>
+            <div class="if-field">
+              <label>Internship Duration</label>
+              <input type="text" name="internship_duration"
+                     placeholder="Format: X Months — e.g., 2 Months or 6 Months"
+                     value="{{ (profile['internship_duration'] or '') if profile else '' }}">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Internship Target, Skills & Projects -->
+        <div class="if-section">
+          <div class="if-section-title">3. Target Role, Location &amp; Technical Work</div>
+          <div class="if-grid-3">
+            <div class="if-field">
+              <label>Preferred Role</label>
+              <input type="text" name="preferred_role"
+                     placeholder="Format: Role Title — e.g., Python Backend Intern"
+                     value="{{ (profile['preferred_role'] or '') if profile else '' }}">
+            </div>
+            <div class="if-field">
+              <label>Preferred City / Location</label>
+              <input type="text" name="preferred_location"
+                     placeholder="Format: City or Remote — e.g., Chennai, Bengaluru, Remote"
+                     value="{{ (profile['preferred_location'] or '') if profile else '' }}">
+            </div>
+            <div class="if-field">
+              <label>Expected Stipend</label>
+              <input type="text" name="stipend_expectation"
+                     placeholder="Format: ₹Amount/month — e.g., ₹15,000/month or Open"
+                     value="{{ (profile['stipend_expectation'] or '') if profile else '' }}">
+            </div>
+
+            <div class="if-field if-full">
+              <label>Technical Skills *</label>
+              <input type="text" name="skills" required
+                     placeholder="Format: Comma-separated tools — e.g., Python, Flask, SQLite, REST APIs, HTML, CSS, Git"
+                     value="{{ (profile['skills'] or '') if profile else '' }}">
+            </div>
+
+            <div class="if-field if-full">
+              <label>Projects Completed (One per line)</label>
+<textarea name="projects" rows="4"
+          placeholder="Format: Numbered list with tech stack, one per line:&#10;1. InternShip Finder — Python, Flask, SQLite & Gemini AI web app for student internship matching&#10;2. Campus Attendance Portal — HTML, CSS, JavaScript & MySQL CRUD tracker">{{ (profile['projects'] or '') if profile else '' }}</textarea>
+<span class="if-hint">Enter each completed project on a new line with its tech stack so the AI awards full portfolio credit.</span>
+            </div>
+
+            <div class="if-field if-full">
+              <label>Specific Internship Goal (Optional)</label>
+              <input type="text" name="what_i_need"
+                     placeholder="Format: 1-sentence goal — e.g., Paid 2-month hands-on backend or full-stack role in Chennai"
+                     value="{{ (profile['what_i_need'] or '') if profile else '' }}">
+            </div>
+          </div>
+        </div>
+
+        <div class="if-actions">
+          <button type="submit" class="if-btn-primary">Save Profile &amp; Update Parameters</button>
+          <a href="{{ url_for('student_dashboard') }}" class="if-btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
