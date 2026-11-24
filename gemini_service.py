@@ -205,10 +205,10 @@ def generate_ai_recommendations(profile, override_need=""):
         p["what_i_need"] = override_need.strip()
 
     api_key = os.environ.get("GEMINI_API_KEY", "").strip().strip('"').strip("'")
-    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip()
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite").strip().strip('"').strip("'")
 
-    if not model_name or model_name == "your-selected-gemini-model":
-        model_name = "gemini-2.5-flash"
+    if not model_name or model_name in ("your-selected-gemini-model", "gemini-2.5-flash", "gemini-2.5-flash-lite"):
+        model_name = "gemini-3.5-flash-lite"
 
     academic = _analyze_academic_standing(p)
     skills_joined = ", ".join(academic["skills_list"]) or (p.get("skills") or "Python")
@@ -406,10 +406,18 @@ Return ONLY valid JSON matching this exact schema:
 }}
 """
         candidate_models = []
-        for m in [model_name, "gemini-2.5-flash", "gemini-2.5-flash-lite"]:
+        for m in [
+            model_name,
+            "gemini-3.5-flash-lite",
+            "gemini-3.1-flash-lite",
+            "gemini-3.6-flash",
+            "gemini-3.7-flash",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash",
+        ]:
             if m and m not in candidate_models:
                 candidate_models.append(m)
-
+                
         response = None
         active_model_used = model_name
         last_err = None
