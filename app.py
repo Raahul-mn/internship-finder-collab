@@ -82,6 +82,13 @@ def student_required(f):
         if 'user_id' not in session or session.get('role') != 'student':
             flash('Access restricted to students.', 'error')
             return redirect(url_for('login'))
+        db = get_db_connection(app.config['DATABASE_PATH'])
+        user = db.execute('SELECT id FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        db.close()
+        if not user:
+            session.clear()
+            flash('Session expired after server restart. Please log in again.', 'error')
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
