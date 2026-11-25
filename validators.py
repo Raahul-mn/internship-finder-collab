@@ -1,5 +1,6 @@
 import re
 
+
 def validate_registration(username, password, confirm_password):
     if not username or len(username.strip()) < 3:
         return "Username must be at least 3 characters long."
@@ -9,19 +10,73 @@ def validate_registration(username, password, confirm_password):
         return "Passwords do not match."
     return None
 
-def validate_email(email):
-    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-    return bool(re.match(pattern, email))
 
-def validate_profile(name, email, skills):
-    """Validates student profile required fields."""
+def validate_email(email):
+    if not email:
+        return False
+    pattern = r'^[\w\.\+\-]+@[\w\.-]+\.\w+$'
+    return bool(re.match(pattern, str(email).strip()))
+
+
+def validate_cgpa(cgpa_raw):
+    """
+    Validates optional 10-point CGPA (0.0 to 10.0) or Percentage (0% to 100%, e.g., '86.5%').
+    Returns an error message string if invalid, or None if valid/empty.
+    """
+    if not cgpa_raw or not str(cgpa_raw).strip():
+        return None
+    text = str(cgpa_raw).strip()
+    if text.startswith("-") or re.search(r"(?:^|\s)-\d", text):
+        return "CGPA / Percentage cannot be negative."
+
+    match = re.search(r"(\d+(?:\.\d+)?)", text)
+    if not match:
+        return "CGPA / Percentage must contain a valid number (e.g., 8.35 or 86.5%)."
+
+    val = float(match.group(1))
+    if "%" in text or "/100" in text or "/ 100" in text:
+        if not (0.0 <= val <= 100.0):
+            return "Percentage score must be between 0% and 100%."
+        return None
+
+    if 0.0 <= val <= 10.0:
+        return None
+
+    return "Enter a 10-point CGPA (0.0–10.0) or include '%' for percentages (e.g., 86.5%)."
+
+
+def normalize_url(url_raw):
+    """Prepends https:// if a user enters a bare domain like github.com/username."""
+    cleaned = str(url_raw or "").strip()
+    if not cleaned:
+        return ""
+    if "://" in cleaned:
+        return cleaned
+    return f"https://{cleaned}"
+
+
+def validate_profile(name, email, skills, cgpa=None, github_url=None, linkedin_url=None):
+    """Validates student profile fields while staying compatible with 3-argument calls."""
     if not name or len(name.strip()) < 2:
         return "Full name is required."
     if not email or not validate_email(email):
         return "A valid email address is required."
     if not skills or len(skills.strip()) < 2:
         return "Skills are required for AI recommendations."
+
+    cgpa_err = validate_cgpa(cgpa)
+    if cgpa_err:
+        return cgpa_err
+
+    url_pattern = re.compile(r"^https?://[^\s/$.?#:]+(?:\.[^\s/$.?#:]+)+(?:/[^\s]*)?$", re.IGNORECASE)
+    for label, url in (("GitHub Profile URL", github_url), ("LinkedIn Profile URL", linkedin_url)):
+        if url and str(url).strip():
+            normalized = normalize_url(url)
+            if not url_pattern.match(normalized):
+                return f"Enter a valid {label} (e.g., https://github.com/username)."
+
     return None
+
 
 # --- Milestone 6: Internship Listing Validators ---
 ALLOWED_WORK_MODES = {"Remote", "On-site", "Hybrid"}
